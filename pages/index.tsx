@@ -6,10 +6,8 @@ import { MagnifyingGlass, User } from "@phosphor-icons/react";
 import { useState } from "react";
 
 // TODO: define global font families
-// TODO: add button links for followers and following
 // TODO: add loading states
 // TODO: fix dark theme mode
-// TODO: implement pagination for the repos
 
 const userTest: GitHubUser = {
   login: "katjakay",
@@ -63,7 +61,6 @@ const Home = () => {
         return res.json();
       })
       .then((data) => {
-        console.log("user", data);
         setUser(data);
       })
       .catch(async (err) => {
