@@ -8,11 +8,6 @@ import formatDate from "../../../utils/formatDate";
 import GitHubUser from "@/models/GitHubUser";
 import ReposModal from "../ReposModal";
 
-// TODO: Sort repos by stars, last updated, etc.
-// TODO: Dark mode toggle.
-// TODO: Debounced input.
-// TODO: Cache previous searches in localStorage or memory.
-// TODO: dont' fetch users if there is only empty space entered. ehn entering empty space between words, cut it out
 interface UserCardProps {
   user: GitHubUser;
 }

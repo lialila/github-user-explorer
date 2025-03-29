@@ -64,8 +64,8 @@ interface GitHubRepo {
   labels_url: string;
   releases_url: string;
   deployments_url: string;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
   pushed_at: string;
   git_url: string;
   ssh_url: string;

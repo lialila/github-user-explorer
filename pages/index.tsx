@@ -6,44 +6,14 @@ import { MagnifyingGlass, User } from "@phosphor-icons/react";
 import { useState } from "react";
 
 // TODO: define global font families
-// TODO: add loading states
+// TODO: add loading states - partly done, check again
 // TODO: fix dark theme mode
-
-const userTest: GitHubUser = {
-  login: "katjakay",
-  id: 118436971,
-  node_id: "U_kgDOBw80aw",
-  avatar_url: "https://avatars.githubusercontent.com/u/118436971?v=4",
-  gravatar_id: "",
-  url: "https://api.github.com/users/katjakay",
-  html_url: "https://github.com/katjakay",
-  followers_url: "https://api.github.com/users/katjakay/followers",
-  following_url: "https://api.github.com/users/katjakay/following{/other_user}",
-  gists_url: "https://api.github.com/users/katjakay/gists{/gist_id}",
-  starred_url: "https://api.github.com/users/katjakay/starred{/owner}{/repo}",
-  subscriptions_url: "https://api.github.com/users/katjakay/subscriptions",
-  organizations_url: "https://api.github.com/users/katjakay/orgs",
-  repos_url: "https://api.github.com/users/katjakay/repos",
-  events_url: "https://api.github.com/users/katjakay/events{/privacy}",
-  received_events_url: "https://api.github.com/users/katjakay/received_events",
-  type: "User",
-  user_view_type: "public",
-  site_admin: false,
-  name: "Katja Kay",
-  company: null,
-  blog: "",
-  location: "Vienna, Austria ",
-  email: null,
-  hireable: null,
-  bio: "👩🏻‍💻 Full-Stack Developer with Graphic Design background 👁",
-  twitter_username: "Katjakay",
-  public_repos: 29,
-  public_gists: 0,
-  followers: 2,
-  following: 13,
-  created_at: new Date("2022-11-17T09:46:01Z"),
-  updated_at: new Date("2025-03-19T12:54:33Z"),
-};
+// TODO: REPO CARD: convert into grid
+// TODO:  REPO CARD: add colors for the languages
+// TODO: Dark mode toggle.
+// TODO: Debounced input.
+// TODO: Cache previous searches in localStorage or memory.
+// TODO: dont' fetch users if there is only empty space entered. ehn entering empty space between words, cut it out
 
 const Home = () => {
   const [search, setSearch] = useState("");
@@ -52,7 +22,12 @@ const Home = () => {
 
   // Fetch user data from Github API on submit
   const onSubmit = () => {
-    fetch(`https://api.github.com/users/${search}`)
+    fetch(`https://api.github.com/users/${search}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    })
       .then(async (res) => {
         if (res.status === 403) {
           setApiError(true);
