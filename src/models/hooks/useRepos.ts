@@ -18,16 +18,25 @@ interface UseInfiniteDataHookProps<T> {
   setSize: (size: number) => Promise<SWRData<T[]>[] | undefined>;
 }
 
-const fetcher = (url: string) =>
-  fetch(url)
-    .then((res) => {
-      if (!res.ok) throw new Error("Failed to fetch data");
-      return res.json();
-    })
-    .catch((err) => {
-      console.error("GitHub API fetch error:", err);
-      return [];
+const fetcher = async (url: string) => {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN}`,
+        Accept: "application/vnd.github.v3+json",
+      },
     });
+
+    if (!res.ok) throw new Error("Failed to fetch data");
+
+    const data = await res.json();
+    // Extract items if using Search API for /search/repositories endpoint
+    return data.items || data;
+  } catch (err) {
+    console.error("GitHub API fetch error:", err);
+    return [];
+  }
+};
 
 const useRepos = ({
   getKey,
