@@ -1,6 +1,7 @@
 import { ColorModeButton } from "@/components/ui/color-mode";
 import UserCard from "@/components/UserCard";
 import GitHubUser from "@/models/GitHubUser";
+import useRepos from "@/models/hooks/useRepos";
 import { Input, Flex, Box, Button, Text, Center } from "@chakra-ui/react";
 import { MagnifyingGlass, User } from "@phosphor-icons/react";
 import { useState } from "react";
@@ -13,12 +14,12 @@ import { useState } from "react";
 // TODO: Dark mode toggle.
 // TODO: Debounced input.
 // TODO: Cache previous searches in localStorage or memory.
-// TODO: dont' fetch users if there is only empty space entered. ehn entering empty space between words, cut it out
 
 const Home = () => {
   const [search, setSearch] = useState("");
   const [user, setUser] = useState(null);
   const [apiError, setApiError] = useState(false);
+  const [userNotFound, setUserNotFound] = useState(false);
 
   // Fetch user data from Github API on submit
   const onSubmit = () => {
@@ -31,7 +32,13 @@ const Home = () => {
       .then(async (res) => {
         if (res.status === 403) {
           setApiError(true);
+          setUser(null);
           return Promise.reject("API limit reached");
+        }
+        if (res.status === 404) {
+          setUserNotFound(true);
+          setUser(null);
+          return Promise.reject("User not found");
         }
         return res.json();
       })
@@ -79,15 +86,23 @@ const Home = () => {
             </Button>
           </Flex>
 
-          {/* API error message */}
-          {apiError && (
-            <Text color="red.500" fontSize="small" fontFamily="MonoSpace">
-              API limit reached, please try again later
-            </Text>
+          {/* Display user card if there are no API errors */}
+          {user ? (
+            <UserCard user={user} />
+          ) : (
+            <>
+              {apiError && (
+                <Text color="red.500" fontSize="small" fontFamily="MonoSpace">
+                  API limit reached, please try again later
+                </Text>
+              )}
+              {userNotFound && (
+                <Text color="red.500" fontSize="small" fontFamily="MonoSpace">
+                  User not found
+                </Text>
+              )}
+            </>
           )}
-
-          {/* User Card */}
-          {user && !apiError && <UserCard user={user} />}
         </Box>
       </Flex>
     </Box>
