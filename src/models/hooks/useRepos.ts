@@ -1,5 +1,5 @@
 import useSWRInfinite, { SWRInfiniteKeyLoader } from "swr/infinite";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import GitHubRepo from "../GitHubRepo";
 
 interface SWRData<Data = any> {
@@ -13,30 +13,8 @@ interface UseInfiniteDataHookProps<T> {
   isLoadingMore: boolean;
   canLoadMore: boolean;
   refetch: () => void;
-  loadMore: () => void;
-  count: number;
   setSize: (size: number) => Promise<SWRData<T[]>[] | undefined>;
 }
-
-const fetcher = async (url: string) => {
-  try {
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN}`,
-        Accept: "application/vnd.github.v3+json",
-      },
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch data");
-
-    const data = await res.json();
-    // Extract items if using Search API for /search/repositories endpoint
-    return data.items || data;
-  } catch (err) {
-    console.error("GitHub API fetch error:", err);
-    return [];
-  }
-};
 
 const useRepos = ({
   getKey,
@@ -45,12 +23,33 @@ const useRepos = ({
   getKey: SWRInfiniteKeyLoader;
   batchSize: number;
 }): UseInfiniteDataHookProps<GitHubRepo[]> => {
+  const fetcher = async (url: string) => {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch data");
+
+      const data = await res.json();
+
+      // Extract items if using Search API for /search/repositories endpoint
+      return data.items || data;
+    } catch (err) {
+      console.error("GitHub API fetch error:", err);
+      return [];
+    }
+  };
   const { data, isLoading, setSize, size, mutate } = useSWRInfinite(
     getKey,
     fetcher,
     {
       revalidateFirstPage: false,
       revalidateAll: false,
+      isPaused: () => !getKey,
     }
   );
 
@@ -63,8 +62,6 @@ const useRepos = ({
     [size, data]
   );
 
-  const loadMore = useCallback(() => setSize(size + 1), [setSize, size]);
-
   const canLoadMore = useMemo(
     () => count !== undefined && size * batchSize === count,
     [count, size, batchSize]
@@ -76,8 +73,6 @@ const useRepos = ({
     isLoadingMore,
     canLoadMore,
     refetch: mutate,
-    loadMore,
-    count,
     setSize,
   };
 };

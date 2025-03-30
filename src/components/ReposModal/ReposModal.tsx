@@ -9,7 +9,7 @@ import {
   Center,
   Spinner,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SWRInfiniteKeyLoader } from "swr/infinite";
 import useRepos from "@/models/hooks/useRepos";
 
@@ -34,57 +34,28 @@ export const ReposModal = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const getKey: SWRInfiniteKeyLoader = (index) => {
-    let url;
+    const url = new URL("https://api.github.com/search/repositories");
 
-    // Always use the search API if language filter is applied
-    if (languageFilter.length > 0 || sort === Sort.MOST_STARS) {
-      url = new URL("https://api.github.com/search/repositories");
-
-      let query = `user:${user.login}`;
-
-      if (languageFilter.length > 0) {
-        // Apply language filters
-        languageFilter.forEach((lang) => {
-          query += ` language:${lang}`;
-        });
-      }
-      url.searchParams.append("q", query);
-
-      // Apply sorting
-      if (sort === Sort.MOST_STARS) {
-        url.searchParams.append("sort", "stars");
-        url.searchParams.append("order", "desc");
-      } else if (sort === Sort.NEWEST_FIRST) {
-        url.searchParams.append("sort", "updated");
-        url.searchParams.append("order", "desc");
-      } else if (sort === Sort.OLDEST_FIRST) {
-        url.searchParams.append("sort", "updated");
-        url.searchParams.append("order", "asc");
-      } else if (sort === Sort.NAME) {
-        url.searchParams.append("sort", "name");
-        url.searchParams.append("order", "asc");
-      }
-
-      url.searchParams.append("per_page", BATCH_SIZE.toString());
-      url.searchParams.append("page", (index + 1).toString());
-
-      return url.toString();
+    // Build query for user and language filter
+    let query = `user:${user.login}`;
+    if (languageFilter.length) {
+      query += ` ${languageFilter.map((lang) => `language:${lang}`).join(" ")}`;
     }
+    url.searchParams.append("q", query);
 
-    url = new URL(`https://api.github.com/users/${user.login}/repos`);
+    const sortOptions: Record<string, { sort: string; order: string }> = {
+      [Sort.MOST_STARS]: { sort: "stars", order: "desc" },
+      [Sort.NEWEST_FIRST]: { sort: "updated", order: "desc" },
+      [Sort.OLDEST_FIRST]: { sort: "updated", order: "asc" },
+      [Sort.NAME]: { sort: "name", order: "asc" },
+    };
+    const selectedSort = sortOptions[sort] || sortOptions[Sort.NAME];
+
+    // Apply sorting
+    url.searchParams.append("sort", selectedSort.sort);
+    url.searchParams.append("order", selectedSort.order);
     url.searchParams.append("per_page", BATCH_SIZE.toString());
     url.searchParams.append("page", (index + 1).toString());
-
-    if (sort === Sort.OLDEST_FIRST) {
-      url.searchParams.append("sort", "updated");
-      url.searchParams.append("direction", "asc");
-    } else if (sort === Sort.NEWEST_FIRST) {
-      url.searchParams.append("sort", "updated");
-      url.searchParams.append("direction", "desc");
-    } else {
-      url.searchParams.append("sort", "name");
-      url.searchParams.append("direction", "asc");
-    }
 
     return url.toString();
   };
@@ -104,14 +75,7 @@ export const ReposModal = ({ user }) => {
         .flatMap((page) => page as unknown as GitHubRepo[])
     : [];
 
-  // Reset pagination to only fetch first page
-  useEffect(() => {
-    if (isOpen) {
-      setSize(1);
-    }
-  }, [isOpen, setSize]);
-
-  // Extract all languages TODO: fix
+  // Fetch all languages used in user's repos. Needs to be done with two api calls
   const fetchAllLanguages = useCallback(async () => {
     try {
       const response = await fetch(
@@ -123,7 +87,6 @@ export const ReposModal = ({ user }) => {
           },
         }
       );
-
       if (!response.ok) throw new Error("Failed to fetch data");
       const data = await response.json();
 
@@ -132,6 +95,7 @@ export const ReposModal = ({ user }) => {
       // Fetch languages for each repo using the "languages_url"
       await Promise.all(
         data.map(async (repo: any) => {
+          // The repo.language prop doesn't return all languages, only the primary language
           if (repo.languages_url) {
             const langResponse = await fetch(repo.languages_url, {
               headers: {
@@ -156,25 +120,12 @@ export const ReposModal = ({ user }) => {
     }
   }, [user.login]);
 
-  // Fetch all languages when component mounts
-  useEffect(() => {
-    fetchAllLanguages();
-  }, [isOpen]);
-
   const sortOptions = [
     { value: Sort.NEWEST_FIRST, label: "Newest" },
     { value: Sort.OLDEST_FIRST, label: "Oldest" },
     { value: Sort.MOST_STARS, label: "Stars" },
     { value: Sort.NAME, label: "Name" },
   ];
-
-  useEffect(() => {
-    if (isOpen) {
-      setLanguageFilter([]);
-      setCurrentPage(1);
-      setSort(Sort.NEWEST_FIRST);
-    }
-  }, [isOpen]);
 
   const handlePrevious = () => {
     setCurrentPage((prevPage) => {
@@ -198,6 +149,14 @@ export const ReposModal = ({ user }) => {
     setSize(1);
     mutate();
   }, [languageFilter, sort, mutate, setSize]);
+
+  useEffect(() => {
+    isOpen && fetchAllLanguages();
+    setLanguageFilter([]);
+    setCurrentPage(1);
+    setSize(1);
+    setSort(Sort.NEWEST_FIRST);
+  }, [isOpen]);
 
   return (
     <>
@@ -293,7 +252,7 @@ export const ReposModal = ({ user }) => {
               </Dialog.Header>
               <Dialog.Body>
                 <Center my="4">
-                  {isLoading && (
+                  {(isLoading || isLoadingMore) && (
                     <Flex gap="2" alignItems="center">
                       <Spinner size="sm" />
                       <p>Loading...</p>
@@ -301,7 +260,7 @@ export const ReposModal = ({ user }) => {
                   )}
                 </Center>
                 <Flex width="100%">
-                  {repos?.length > 0 ? (
+                  {!isLoading && repos?.length > 0 ? (
                     <Flex gap="4" flexWrap="wrap">
                       {repos.map((repo) => (
                         <Box
@@ -325,14 +284,14 @@ export const ReposModal = ({ user }) => {
               <Dialog.Footer>
                 <Button
                   onClick={handlePrevious}
-                  disabled={!(currentPage > 1)}
+                  disabled={!(currentPage > 1) || isLoadingMore}
                   variant="ghost"
                 >
                   <CaretLeft size={32} />
                 </Button>
                 {repos.length > 0 && <Text>{currentPage}</Text>}
                 <Button
-                  disabled={!canLoadMore}
+                  disabled={!canLoadMore || isLoadingMore}
                   onClick={handleNext}
                   variant="ghost"
                 >
