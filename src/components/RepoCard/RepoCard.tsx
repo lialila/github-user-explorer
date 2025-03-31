@@ -10,11 +10,11 @@ interface ReposCardProps {
 
 export const RepoCard = ({ repo }: ReposCardProps) => {
   return (
-    <Box p="4" background="blue.100" borderRadius="md" h="100%" w="100%">
+    <Box m="4" borderBottom="1px solid gray" h="100%" w="100%">
       <Flex flexDir="column" gap="2">
         <Flex justifyContent="space-between" alignItems="baseline">
           <Link href={repo.html_url}>
-            <Box maxWidth="120px">
+            <Box>
               <Text fontSize="small" fontWeight="bold" wordBreak="break-word">
                 {cropText(repo.name, 25)}
               </Text>

@@ -1,6 +1,6 @@
 interface GitHubUser {
-  login: string;
   id: number;
+  login: string;
   node_id: string;
   avatar_url?: string;
   gravatar_id?: string;
