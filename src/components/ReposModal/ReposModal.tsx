@@ -12,6 +12,11 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { SWRInfiniteKeyLoader } from "swr/infinite";
 import useRepos from "@/models/hooks/useRepos";
+import Select from "react-select";
+import RepoCard from "../RepoCard";
+import GitHubRepo from "@/models/GitHubRepo";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { useTheme } from "next-themes";
 
 const enum Sort {
   NEWEST_FIRST = "Newest First",
@@ -19,12 +24,8 @@ const enum Sort {
   MOST_STARS = "Stars",
   NAME = "Name",
 }
-import Select from "react-select";
-import RepoCard from "../RepoCard";
-import GitHubRepo from "@/models/GitHubRepo";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
-const BATCH_SIZE = 6;
+const BATCH_SIZE = 4;
 
 export const ReposModal = ({ user }) => {
   const [allLanguageOptions, setAllLanguageOptions] = useState([]);
@@ -167,26 +168,20 @@ export const ReposModal = ({ user }) => {
         onOpenChange={(details) => setIsOpen(details.open)}
       >
         <Dialog.Trigger asChild>
-          <Button
-            variant="ghost"
-            size="xs"
-            color="gray.500"
-            fontFamily="MonoSpace"
+          <Flex
+            flexDir="column"
+            gap="3px"
+            m="2"
+            mt="2"
+            style={{ cursor: "pointer" }}
           >
-            <Flex flexDir="column" gap="1" m="2" mt="2">
-              <Text fontFamily="MonoSpace" color="gray.500" fontSize="small">
-                Repos
-              </Text>
-              <Text
-                mx="auto"
-                fontFamily="MonoSpace"
-                fontWeight="bold"
-                color="black"
-              >
-                {user.public_repos}
-              </Text>
-            </Flex>
-          </Button>
+            <Text fontFamily="MonoSpace" color="gray.500" fontSize="small">
+              Repos
+            </Text>
+            <Text mx="auto" fontFamily="MonoSpace" fontWeight="bold">
+              {user.public_repos}
+            </Text>
+          </Flex>
         </Dialog.Trigger>
         <Portal>
           <Dialog.Backdrop />
@@ -263,11 +258,7 @@ export const ReposModal = ({ user }) => {
                   {!isLoading && repos?.length > 0 ? (
                     <Flex gap="4" flexWrap="wrap">
                       {repos.map((repo) => (
-                        <Box
-                          key={repo.id}
-                          width={{ base: "100%", md: "195px" }}
-                          height="180px"
-                        >
+                        <Box key={repo.id} width="100%" height="80px">
                           <RepoCard repo={repo} />
                         </Box>
                       ))}
