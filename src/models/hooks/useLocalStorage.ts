@@ -28,8 +28,8 @@ const useLocaLStorage = () => {
   };
 
   // Remove item from local storage
-  const removeItem = (valueToRemove: string) => {
-    const updatedValues = values.filter((value) => value !== valueToRemove);
+  const removeItem = (indexToRemove: number) => {
+    const updatedValues = values.filter((_, index) => index !== indexToRemove);
     setValues(updatedValues);
     localStorage.setItem("search", JSON.stringify(updatedValues));
   };

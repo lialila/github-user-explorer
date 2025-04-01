@@ -1,3 +1,4 @@
+import React from "react";
 import UserCard from "@/components/UserCard";
 import useLocaLStorage from "@/models/hooks/useLocalStorage";
 import {
@@ -9,18 +10,9 @@ import {
   Tag,
   IconButton,
 } from "@chakra-ui/react";
-import { MagnifyingGlass, Trash } from "@phosphor-icons/react";
+import { CaretUp, MagnifyingGlass, Trash } from "@phosphor-icons/react";
 import { useState } from "react";
 import { debounce } from "lodash";
-
-// TODO: define global font families
-// TODO: add loading states - partly done, check again
-// TODO: ? REPO CARD: convert into grid
-// TODO:  REPO CARD: add colors for the languages
-// TODO: add readme
-// TODO: add component for modal in RepoModal
-// TODO: add tests
-// TODO: user card repos-fololowers and following convert to grid
 
 const Home = () => {
   const [search, setSearch] = useState("");
@@ -28,10 +20,16 @@ const Home = () => {
   const [apiError, setApiError] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Allows user close the search history
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   const debouncedSearch = debounce((value) => {
     setSearch(value);
-    onSubmit();
+    onSubmit(value);
   }, 300);
 
   const {
@@ -42,12 +40,12 @@ const Home = () => {
   } = useLocaLStorage();
 
   // Fetch user data from Github API on submit
-  const onSubmit = () => {
-    if (!search.trim()) return;
+  const onSubmit = (searchValue = search) => {
+    if (!searchValue.trim()) return;
 
     setIsLoading(true);
 
-    fetch(`https://api.github.com/users/${search}`, {
+    fetch(`https://api.github.com/users/${searchValue}`, {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN}`,
         Accept: "application/vnd.github.v3+json",
@@ -57,13 +55,13 @@ const Home = () => {
         if (res.status === 403) {
           setApiError(true);
           setUser(null);
-          setItem(search);
+          setItem(searchValue);
           return Promise.reject("API limit reached");
         }
         if (res.status === 404) {
           setUserNotFound(true);
           setUser(null);
-          setItem(search);
+          setItem(searchValue);
           return Promise.reject("User not found");
         }
         return res.json();
@@ -72,7 +70,7 @@ const Home = () => {
         setUser(data);
         setItem(search);
       })
-      .catch(async (err) => {
+      .catch((err) => {
         console.error("Error fetching user: ", err);
       })
       .finally(() => {
@@ -83,18 +81,21 @@ const Home = () => {
 
   return (
     <Box height="vh" background="gray.200">
-      <Flex flexDir="column" alignItems="center" height="80%">
-        <Box my="auto" width="420px">
+      <Flex flexDir="column" alignItems="center" height="100%">
+        <Box
+          my="auto"
+          width={{ base: "full", md: "420px" }}
+          px={{ base: "6", md: "0" }}
+        >
           <h1 style={{ fontFamily: "MonoSpace" }}>devfinder</h1>
-
-          {/* Input field */}
           <Flex
             alignItems="center"
             gap="3"
             background="gray.100"
             px="4"
             py="2"
-            my="4"
+            mt="4"
+            mb="2"
             borderRadius="md"
             boxShadow="sm"
           >
@@ -109,59 +110,15 @@ const Home = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  debouncedSearch();
+                  debouncedSearch(search);
                 }
               }}
             />
-            <Button size="2xs" onClick={onSubmit} disabled={isLoading}>
+            <Button size="2xs" onClick={() => onSubmit()} disabled={isLoading}>
               SEARCH
             </Button>
           </Flex>
-          <Flex width="90" mb="4" gap="1" flexWrap="wrap">
-            {valuesFromStorage.length > 0 &&
-              valuesFromStorage.map((value, index) => (
-                <Flex key={index} alignItems="center">
-                  <Tag.Root
-                    key={index}
-                    py="4px"
-                    px="6px"
-                    colorPalette="gray"
-                    color="gray.400"
-                    style={{ cursor: "pointer" }}
-                    fontFamily={"MonoSpace"}
-                    fontSize="2x-small"
-                    _hover={{ bg: "blue.100", color: "blue.900" }}
-                  >
-                    <Tag.Label>
-                      <span
-                        style={{ cursor: "pointer" }}
-                        onClick={() => setSearch(value)}
-                      >
-                        {value}
-                      </span>
-                    </Tag.Label>
-                    <Tag.EndElement>
-                      <Tag.CloseTrigger onClick={() => removeItem(value)} />
-                    </Tag.EndElement>
-                  </Tag.Root>
-                </Flex>
-              ))}
-            {valuesFromStorage.length > 0 && (
-              <IconButton
-                size="xs"
-                variant="ghost"
-                aria-label="Clear search history"
-                onClick={() => clearStorage()}
-                _hover={{ bg: "red.200" }}
-              >
-                <Trash size={5} color="var(--chakra-colors-gray-600)" />
-              </IconButton>
-            )}
-          </Flex>
-          {/* Display user card if there are no API errors */}
-          {user ? (
-            <UserCard user={user} />
-          ) : (
+          {!user && (
             <>
               {apiError && (
                 <Text color="red.500" fontSize="small" fontFamily="MonoSpace">
@@ -175,6 +132,81 @@ const Home = () => {
               )}
             </>
           )}
+
+          {/* The history of last searches  */}
+          <Flex width="90" my="4" gap="1" flexWrap="wrap">
+            {valuesFromStorage.length > 0 &&
+              valuesFromStorage
+                .slice(
+                  valuesFromStorage.length > 8 && !isExpanded
+                    ? valuesFromStorage.length - 6
+                    : 0,
+                  valuesFromStorage.length
+                )
+                .reverse()
+                .map((value, index) => (
+                  <Flex key={index} alignItems="center">
+                    <Tag.Root
+                      key={index}
+                      py="4px"
+                      px="6px"
+                      colorPalette="gray"
+                      color="gray.400"
+                      style={{ cursor: "pointer" }}
+                      fontFamily={"MonoSpace"}
+                      _hover={{ bg: "blue.100", color: "blue.900" }}
+                    >
+                      <Tag.Label>
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => setSearch(value)}
+                        >
+                          {value}
+                        </span>
+                      </Tag.Label>
+                      <Tag.EndElement>
+                        <Tag.CloseTrigger onClick={() => removeItem(index)} />
+                      </Tag.EndElement>
+                    </Tag.Root>
+                  </Flex>
+                ))}
+
+            {/* If the history is not expanded, show button to collapse it */}
+            {valuesFromStorage.length > 6 && (
+              <Tag.Root
+                py="4px"
+                px="6px"
+                colorPalette="gray"
+                color="gray.400"
+                style={{ cursor: "pointer" }}
+                fontFamily={"MonoSpace"}
+                _hover={{ bg: "green.100" }}
+              >
+                <Tag.Label>
+                  <span style={{ cursor: "pointer" }} onClick={toggleExpand}>
+                    {isExpanded ? (
+                      <CaretUp size={12} color="#a1a1aa" weight="fill" />
+                    ) : (
+                      "..."
+                    )}
+                  </span>
+                </Tag.Label>
+              </Tag.Root>
+            )}
+            {valuesFromStorage.length > 0 && (
+              <IconButton
+                size="2xs"
+                variant="ghost"
+                aria-label="Clear search history"
+                onClick={() => clearStorage()}
+                _hover={{ bg: "red.200" }}
+              >
+                <Trash size={5} color="var(--chakra-colors-gray-600)" />
+              </IconButton>
+            )}
+          </Flex>
+          {/* Display user card if there are no API errors */}
+          {user && <UserCard user={user} />}
         </Box>
       </Flex>
     </Box>
