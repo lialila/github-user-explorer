@@ -92,7 +92,7 @@ export const ReposModal = ({ user }: ReposModalProps) => {
   };
 
   // Filter, sort, and paginate repos
-  const filteredRepos = allRepos
+  const filteredRepos: GitHubRepo[] = allRepos
     .filter(
       (repo) =>
         languageFilter.length === 0 || languageFilter.includes(repo.language)

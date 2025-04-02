@@ -1,6 +1,6 @@
 import React from "react";
 import UserCard from "@/components/UserCard";
-import useLocaLStorage from "@/models/hooks/useLocalStorage";
+import useLocaLStorage from "../hooks/useLocalStorage";
 import {
   Input,
   Flex,
@@ -9,25 +9,28 @@ import {
   Text,
   Tag,
   IconButton,
+  useToken,
 } from "@chakra-ui/react";
 import { CaretUp, MagnifyingGlass, Trash } from "@phosphor-icons/react";
 import { useState } from "react";
 import { debounce } from "lodash";
+import GitHubUser from "@/models/GitHubUser";
 
 const Home = () => {
-  const [search, setSearch] = useState("");
-  const [user, setUser] = useState(null);
-  const [apiError, setApiError] = useState(false);
-  const [userNotFound, setUserNotFound] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [search, setSearch] = useState<string>("");
+  const [user, setUser] = useState<GitHubUser | null>(null);
+  const [apiError, setApiError] = useState<boolean>(false);
+  const [userNotFound, setUserNotFound] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [gray600] = useToken("colors", ["gray.600"]);
 
   // Allows user close the search history
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const debouncedSearch = debounce((value) => {
+  const debouncedSearch = debounce((value: string) => {
     setSearch(value);
     onSubmit(value);
   }, 300);
@@ -201,7 +204,7 @@ const Home = () => {
                 onClick={() => clearStorage()}
                 _hover={{ bg: "red.200" }}
               >
-                <Trash size={5} color="var(--chakra-colors-gray-600)" />
+                <Trash size={5} color={gray600} />
               </IconButton>
             )}
           </Flex>
