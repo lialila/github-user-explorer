@@ -148,9 +148,10 @@ export const ReposModal = ({ user }: ReposModalProps) => {
   return (
     <>
       <Dialog.Root
+        scrollBehavior="inside"
         placement="center"
         modal={true}
-        size={{ base: "sm", md: "lg" }}
+        size={{ base: "xs", md: "lg" }}
         open={isOpen}
         onOpenChange={(details) => setIsOpen(details.open)}
       >
@@ -266,14 +267,10 @@ export const ReposModal = ({ user }: ReposModalProps) => {
                   </Flex>
                 </Flex>
               </Dialog.Header>
-              <Dialog.Body>
+              <Dialog.Body paddingBottom="2">
                 <Flex width="full">
                   {!isLoading && paginatedRepos?.length > 0 ? (
-                    <Flex
-                      flexDir="column"
-                      width="full"
-                      height={{ base: "400px", md: "450px" }}
-                    >
+                    <Flex flexDir="column" width="full">
                       {paginatedRepos.map((repo, index) => (
                         <Box
                           key={repo.id}
@@ -308,7 +305,7 @@ export const ReposModal = ({ user }: ReposModalProps) => {
                   )}
                 </Center>
               </Dialog.Body>
-              <Dialog.Footer>
+              <Dialog.Footer paddingTop="1">
                 <IconButton
                   onClick={handlePrevious}
                   disabled={!(currentPage > 1) || isLoading}

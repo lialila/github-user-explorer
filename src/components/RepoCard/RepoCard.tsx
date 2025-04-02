@@ -37,7 +37,7 @@ enum LanguageColors {
 
 export const RepoCard = ({ repo }: ReposCardProps) => {
   return (
-    <Box p={{ base: "4", md: "6" }} h="full" borderBottom="1px solid black">
+    <Box p={{ base: "3", md: "4" }} h="full" borderBottom="1px solid black">
       <Flex flexDir="column" gap="2">
         <Flex justifyContent="space-between" alignItems="baseline">
           <Link href={repo.html_url}>
