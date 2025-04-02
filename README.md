@@ -21,7 +21,7 @@ To get started with the project, follow these steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/github-user-explorer.git
+   git clone https://github.com/lialila/github-user-explorer.git
    cd github-user-explorer
    ```
 
