@@ -12,13 +12,7 @@ interface UserCardProps {
 }
 
 export const UserCard = ({ user }: UserCardProps) => (
-  <Box
-    background="gray.100"
-    borderRadius="md"
-    boxShadow="sm"
-    p="6"
-    maxWidth="90"
-  >
+  <Box background="white" borderRadius="md" boxShadow="sm" p="6" maxWidth="90">
     {/* Avatar, Name, Username, Joined Date */}
     <Flex alignItems="flex-start" gap="4">
       <Box mx="3">

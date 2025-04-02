@@ -83,7 +83,7 @@ const Home = () => {
   };
 
   return (
-    <Box height="vh" background="gray.200">
+    <Box height="vh" background="gray.100">
       <Flex flexDir="column" alignItems="center" height="100%">
         <Box
           my="auto"
@@ -94,7 +94,7 @@ const Home = () => {
           <Flex
             alignItems="center"
             gap="3"
-            background="gray.100"
+            background="white"
             px="4"
             py="2"
             mt="4"
@@ -154,7 +154,7 @@ const Home = () => {
                       py="4px"
                       px="6px"
                       colorPalette="gray"
-                      color="gray.400"
+                      color="gray.500"
                       style={{ cursor: "pointer" }}
                       fontFamily={"MonoSpace"}
                       _hover={{ bg: "blue.100", color: "blue.900" }}
