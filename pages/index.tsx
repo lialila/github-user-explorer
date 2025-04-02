@@ -175,7 +175,7 @@ const Home = () => {
                 ))}
 
             {/* If the history is not expanded, show button to collapse it */}
-            {valuesFromStorage.length > 6 && (
+            {valuesFromStorage.length > 8 && (
               <Tag.Root
                 py="4px"
                 px="6px"
