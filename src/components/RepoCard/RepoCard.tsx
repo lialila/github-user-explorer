@@ -4,6 +4,7 @@ import Link from "next/link";
 import GitHubRepo from "@/models/GitHubRepo";
 import { Star } from "@phosphor-icons/react";
 import cropText from "../../../utils/cropText";
+import { FormattedDate } from "react-intl";
 
 interface ReposCardProps {
   repo: GitHubRepo;
@@ -73,12 +74,14 @@ export const RepoCard = ({ repo }: ReposCardProps) => {
           )}
           <Text fontSize="x-small" lineHeight="12px" color="blue.400">
             Updated on{" "}
-            {repo.updated_at &&
-              new Date(repo.updated_at).toLocaleDateString("en-EN", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-              })}
+            {repo.updated_at && (
+              <FormattedDate
+                value={new Date(repo.updated_at)}
+                year="numeric"
+                month="2-digit"
+                day="2-digit"
+              />
+            )}
           </Text>
         </Flex>
         {repo.description && (
