@@ -138,42 +138,59 @@ const Home = () => {
 
           {/* The history of last searches  */}
           <Flex width="90" my="4" gap="1" flexWrap="wrap">
-            {valuesFromStorage.length > 0 &&
-              valuesFromStorage
-                .slice(
-                  valuesFromStorage.length > 8 && !isExpanded
-                    ? valuesFromStorage.length - 6
-                    : 0,
-                  valuesFromStorage.length
-                )
-                .reverse()
-                .map((value, index) => (
-                  <Flex key={index} alignItems="center">
-                    <Tag.Root
-                      key={index}
-                      py="4px"
-                      px="6px"
-                      colorPalette="gray"
-                      color="gray.500"
-                      style={{ cursor: "pointer" }}
-                      fontFamily={"MonoSpace"}
-                      _hover={{ bg: "blue.100", color: "blue.900" }}
-                    >
-                      <Tag.Label>
-                        <span
-                          style={{ cursor: "pointer" }}
-                          onClick={() => setSearch(value)}
-                        >
-                          {value}
-                        </span>
-                      </Tag.Label>
-                      <Tag.EndElement>
-                        <Tag.CloseTrigger onClick={() => removeItem(index)} />
-                      </Tag.EndElement>
-                    </Tag.Root>
-                  </Flex>
-                ))}
+            {valuesFromStorage.length > 0 && (
+              <>
+                {valuesFromStorage
+                  .slice(
+                    valuesFromStorage.length > 8 && !isExpanded
+                      ? valuesFromStorage.length - 6
+                      : 0,
+                    valuesFromStorage.length
+                  )
+                  .reverse()
+                  .map((value, index, reversedArray) => {
+                    const originalIndex =
+                      (valuesFromStorage.length > 8 && !isExpanded
+                        ? valuesFromStorage.length - 6
+                        : 0) +
+                      (reversedArray.length - 1 - index);
 
+                    return (
+                      <Flex key={originalIndex} alignItems="center">
+                        <Tag.Root
+                          py="4px"
+                          px="6px"
+                          colorPalette="gray"
+                          color="gray.500"
+                          style={{ cursor: "pointer" }}
+                          fontFamily="MonoSpace"
+                          _hover={{ bg: "blue.100", color: "blue.900" }}
+                        >
+                          <Tag.Label>
+                            <span
+                              style={{ cursor: "pointer" }}
+                              onClick={() => setSearch(value)}
+                            >
+                              {value}
+                            </span>
+                          </Tag.Label>
+                          <Tag.EndElement>
+                            <Tag.CloseTrigger
+                              onClick={() => {
+                                removeItem(originalIndex);
+                                console.log(
+                                  "Removing at original index:",
+                                  originalIndex
+                                );
+                              }}
+                            />
+                          </Tag.EndElement>
+                        </Tag.Root>
+                      </Flex>
+                    );
+                  })}
+              </>
+            )}
             {/* If the history is not expanded, show button to collapse it */}
             {valuesFromStorage.length > 8 && (
               <Tag.Root
